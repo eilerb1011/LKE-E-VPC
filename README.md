@@ -98,7 +98,7 @@ You can now also add additional subnets like this in your `vpc.tf` file:
  ```
  resource "linode_vpc_subnet" "lke_customer_subnet_1" {
   vpc_id = linode_vpc.lke_managed.id
-  ipv4 = "172.16.100.0/24" 
+  ipv4 = "172.16.0.0/16" 
   label = "lke503536-Customer-1"
 }
 ```
