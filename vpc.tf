@@ -1,6 +1,6 @@
 resource "linode_vpc" "lke_managed" {
   id = 55555
-  label = "ThishouldBe lke+your clusterID"
+  label = "ThishouldBe lke+your clusterID" //Example "lke12345"
   region      = var.region
   }
 resource "linode_vpc_subnet" "lke_managed_subnet" {
