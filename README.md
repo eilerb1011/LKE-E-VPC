@@ -6,18 +6,17 @@ The infra-lke-e.tf file is a base k8s tf deployment with some lines commented ou
 
 Some of the highlights - 
 1. the provider config now specifies v4beta
-2. the control_plane arguement is commented out, as the HA part is no longer valid
-	a. HOWEVER - if you use control plane acl, it is still specified here, and is enabled by default
-3. The k8s_version is now retrieved from the v4beta api at the url specified. The `id` field contains the version to be used in the TF file.
-```
-curl https://api.linode.com/v4beta/lke/tiers/enterprise/versions -H "Authorization: Bearer $token" | jq
-```
-4. You can modify the follwing in the tfvars file to suit your needs:
+2. the control_plane arguement for HA is commented out, as the HA part is no longer valid with a dedicated control plane in LKE-E
+	a. HOWEVER - if you use control plane acl, it is still specified here, and IS enabled by default. You can modify the CIDRs in the block.
+3. You can modify the follwing in the tfvars file to suit your needs:
    a. region - you can deploy in any region LKE-E exists
      - You can find these regions using this API command:
      - `curl https://`
-   b.
-   c.
+   b. k8s_version = "v1.31.8+lke5" --You can pull current versions here:
+   - `curl https://api.linode.com/v4beta/lke/tiers/enterprise/versions -H "Authorization: Bearer $token" | jq'
+     
+   c. Modify your pools with min/max node numbers and the type of node you want to deploy. Types are available here:
+   - `curl https://`
    
 After deployment use your kubeconfig as usual by pulling it from tf outputs:
 ```
@@ -83,7 +82,7 @@ terraform import linode_vpc.lke_managed REPLACEwithYOURvpcID
 terraform import linode_vpc_subnet.lke_managed_subnet REPLACEwithYOURvpcID,REPLACEwithYOURsubnetID
 ```
 
-Now. re-open the vpc.tf file and delete the `id:` line from the managed vpc and subnet resources - since these are read-only fields in the API. Only the `id:` line from each.
+Now. re-open the vpc.tf file and delete the `id:` line from the vpc and vpc_subnet resources - since these are read-only fields in the API. Only the `id:` line from each.
 
 You can now also add additional subnets like this in your vpc.tf file:
  ```
@@ -93,15 +92,28 @@ You can now also add additional subnets like this in your vpc.tf file:
   label = "lke503536-Customer-1"
 }
 ```
- Just make sure you match up the route-add.yaml file with any subnets you create here. Create the new subnets in the LKE VPC with the `terraform apply` command
+Just make sure you match up the route-add.yaml file with any subnets you create here. Create the new subnets in the LKE VPC with the `terraform apply` command
  
- Then add VMs to said VPC and use the VPC subnet id you created. This should allow traffic to flow through.
+Run a `terraform apply` to create the new subnet in your LKE-E vpc, The vpcid and NEW subnetid can now be attached to linodes you create. See below:
 
-Do a tf apply to create the new subnet in your LKE-E vpc
---The vpcid and NEW subnetid can now be attached to linodes you create. 
-
-Enable routing to the vpc from the hosts by running the daemonset route-add.yaml
+Enable routing to the vpc from the hosts by running the daemonset route-add.yaml with `kubectl apply -f route-add.yaml`
 
 The last thing you will need to do is adjust the fw policies to match. These too can be imported into TF in the same manner - this of course if only necessary if you are initiating the connection from outside the cluster to in. Connections from the cluster to the newly created (by you) subnets are already being curated by you. These policies will need to allow the LKE subnet inbound (10.0.0.0/8) to ensure traffic flow.
 
-##Add a Linode
+## Add a Linode and Test Communication
+Now you can deploy the instance.tf file included here. This is purely for testing, so change anything really except the following fields:
+```
+  region          = var.region
+```
+And the entire interface block should not be changed:
+```
+  interface {
+    purpose   = "vpc"
+    subnet_id = linode_vpc_subnet.lke_customer_subnet_1.id
+    primary = true
+    ipv4 {
+      nat_1_1 = "any"
+    }
+  }
+```
+This TF will create an instance using the subnet ID of the newly created subnet within the VPC in your current region where LKE-E resides.
