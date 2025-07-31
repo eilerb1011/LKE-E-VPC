@@ -35,7 +35,8 @@ Now - if you want to add a subnet to the k8s VPC - you can do this via API or TF
 In order to add subnets to the vpc via TF, you will need to import the VPC and VPC subnet created by Akamai during the creation of the LKE Cluster by adding the `vpc.tf` file from this archive into your environment and adjusting the following fields with values from your account. You will need to gather these items:
  - **LKE ClusterID**
  - **vpc_id**
-  - **subnet_id**
+ - **subnet_id**
+   
   You will get these by doing this:
  ```
  terraform output clusterid
@@ -75,7 +76,7 @@ resource "linode_vpc" "lke_managed" {
   region      = var.region
   }
 resource "linode_vpc_subnet" "lke_managed_subnet" {
-  **id = Type the subnet_id numbers here - no quotes**
+  id = Type the subnet_id numbers here - no quotes
   vpc_id = linode_vpc.lke_managed.id
   ipv4 = "10.0.0.0/8" 
   label = "managed-subnet"
@@ -92,7 +93,7 @@ Example: if my vpcID is 55555 and my vpcSubnetID is 22222 my commands will looks
 terraform import linode_vpc.lke_managed 55555
 terraform import linode_vpc_subnet.lke_managed_subnet 55555,22222
 ```
-Now. re-open the `vpc.tf` file and delete the `id:` line from the `vpc` and `vpc_subnet` resources - since these are read-only fields in the API. Only the `id:` line from each.
+Now. re-open the `vpc.tf` file and delete the `id:` line from the `vpc` and `vpc_subnet` resources - since these are read-only fields in the API. Only remove the `id:` line from each.
 
 You can now also add additional subnets like this in your `vpc.tf` file:
  ```
