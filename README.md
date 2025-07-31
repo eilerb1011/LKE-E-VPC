@@ -2,7 +2,7 @@
 Terraform for LKE-E with additional VPC subnets
 
 ## Build the LKE-E Cluster
-The infra-lke-e.tf file is a base k8s tf deployment with some lines commented out, and some lines added to adjust LKE to LKE-E. To deploy, use infra-lke-e.tf, variables.tf and terraform.tfvars - keep the rest of the files out for now.
+The infra-lke-e.tf file is a base k8s tf deployment with some lines commented out, and some lines added to adjust LKE to LKE-E. To deploy, use infra-lke-e.tf, variables.tf and terraform.tfvars - and run your `terraform init`. Keep the rest of the files out for now.
 
 Some of the highlights - 
 1. the provider config now specifies v4beta
